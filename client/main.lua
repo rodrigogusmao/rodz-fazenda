@@ -916,32 +916,20 @@ end
 -- ─── NUI Tablet ──────────────────────────────────────────────────────────────
 
 openFarmTablet = function(farmId, tab)
-    print('[rfz-debug][1] openFarmTablet | farmId=' .. tostring(farmId) .. ' tab=' .. tostring(tab))
-
     local farm = Farms[farmId]
-    if not farm then
-        local keys = ''
-        for k in pairs(Farms) do keys = keys .. k .. ',' end
-        print('[rfz-debug][1-FAIL] farm nao existe em Farms | Farms keys={' .. keys .. '}')
-        return
-    end
-    print('[rfz-debug][2] farm ok | label=' .. tostring(farm.label))
+    if not farm then return end
 
     local data = lib.callback.await('rodz-fazenda:server:getTabletFarmData', false, farmId)
     if not data then
-        print('[rfz-debug][3-FAIL] getTabletFarmData retornou nil (timeout ou erro no server)')
         notify('Não foi possível carregar os dados da fazenda.', 'error')
         return
     end
     if not data.ok then
-        print('[rfz-debug][3-FAIL] getTabletFarmData ok=false | cowCount=' .. tostring(data.cowCount))
         notify('Não foi possível carregar os dados da fazenda.', 'error')
         return
     end
-    print('[rfz-debug][3] getTabletFarmData ok | corrals=#' .. tostring(#(data.corrals or {})) .. ' cows=' .. tostring(data.cowCount) .. ' pigs=' .. tostring(data.pigCount))
 
     local snapshots = lib.callback.await('rodz-fazenda:server:getAnimalData', false)
-    print('[rfz-debug][4] getAnimalData | nil=' .. tostring(snapshots == nil))
     local animals   = {}
     if snapshots then
         for animalId, snap in pairs(snapshots) do
@@ -950,13 +938,9 @@ openFarmTablet = function(farmId, tab)
             end
         end
     end
-    local animalCount = 0
-    for _ in pairs(animals) do animalCount = animalCount + 1 end
-    print('[rfz-debug][5] animais desta fazenda=' .. animalCount)
 
-    local playerInv    = lib.callback.await('rodz-fazenda:server:getPlayerInventoryItems', false)
-    print('[rfz-debug][6] getPlayerInventoryItems | nil=' .. tostring(playerInv == nil) .. (playerInv and (' milk=' .. tostring(playerInv.milk) .. ' medicine=' .. tostring(playerInv.medicine)) or ''))
-    local milkCount    = 0
+    local playerInv     = lib.callback.await('rodz-fazenda:server:getPlayerInventoryItems', false)
+    local milkCount     = 0
     local medicineCount = 0
     if playerInv then
         milkCount     = playerInv.milk     or 0
@@ -967,7 +951,6 @@ openFarmTablet = function(farmId, tab)
     nuiOpen       = true
 
     local accentColor = GetConvar('mri:color', '#00E699')
-    print('[rfz-debug][7] SetNuiFocus + SendNUIMessage{type=show} | accentColor=' .. accentColor)
     SetNuiFocus(true, true)
     SendNUIMessage({
         type          = 'show',

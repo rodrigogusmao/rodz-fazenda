@@ -388,21 +388,17 @@ function renderSales() {
 // ─── Mensagens do Lua ─────────────────────────────────────────────────────────
 window.addEventListener('message', e => {
     const { type, ...data } = e.data;
-    console.log('[rfz-debug][NUI] message recebida | type=' + type);
 
     if (type === 'show') {
-        console.log('[rfz-debug][NUI-show] farmId=' + data.farmId + ' tab=' + (data.tab || 'overview'));
-        console.log('[rfz-debug][NUI-show] corrals=' + (data.corrals || []).length + ' cowCount=' + data.cowCount + ' pigCount=' + data.pigCount);
-        console.log('[rfz-debug][NUI-show] prices recebidos=' + JSON.stringify(data.prices));
         if (data.accentColor) applyAccentColor(data.accentColor);
 
         state.farmId        = data.farmId;
         state.farmName      = data.farmName;
         state.farmPrice     = data.farmPrice     || 0;
         state.salePrice     = data.salePrice     ?? null;
-        state.employees = data.employees || [];
-        state.isOwner   = data.isOwner   ?? false;
-        state.corrals   = data.corrals   || [];
+        state.employees     = data.employees     || [];
+        state.isOwner       = data.isOwner       ?? false;
+        state.corrals       = data.corrals       || [];
         state.animals       = data.animals       || {};
         state.cowCount      = data.cowCount      || 0;
         state.pigCount      = data.pigCount      || 0;
@@ -411,13 +407,10 @@ window.addEventListener('message', e => {
         state.prices        = data.prices        || {};
 
         const app = document.getElementById('app');
-        console.log('[rfz-debug][NUI-show] #app encontrado=' + !!app + ' classes antes=' + (app ? app.className : 'N/A'));
         if (app) app.classList.remove('hidden');
-        console.log('[rfz-debug][NUI-show] classes depois=' + (app ? app.className : 'N/A'));
 
         switchTab(data.tab || 'overview');
         renderOverview();
-        console.log('[rfz-debug][NUI-show] renderOverview concluido');
         return;
     }
 
@@ -446,7 +439,6 @@ window.addEventListener('message', e => {
         return;
     }
 
-    console.log('[rfz-debug][NUI] type desconhecido ignorado: ' + type);
 });
 
 // ─── Event Listeners ──────────────────────────────────────────────────────────

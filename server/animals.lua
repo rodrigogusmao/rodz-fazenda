@@ -1026,20 +1026,13 @@ end)
 
 -- ─── Callbacks do Tablet NUI ──────────────────────────────────────────────────
 
-lib.callback.register('rodz-fazenda:server:getTabletFarmData', function(src, farmId)
-    print('[rfz-debug][S1] getTabletFarmData | src=' .. tostring(src) .. ' farmId=' .. tostring(farmId))
-
+lib.callback.register('rodz-fazenda:server:getTabletFarmData', function(_, farmId)
     local farm = Farms[farmId]
     if not farm then
-        local keys = ''
-        for k in pairs(Farms) do keys = keys .. k .. ',' end
-        print('[rfz-debug][S1-FAIL] Farms nao tem farmId=' .. tostring(farmId) .. ' | keys={' .. keys .. '}')
         return { ok = false }
     end
-    print('[rfz-debug][S2] farm encontrado | corrals=#' .. tostring(#(farm.corrals or {})))
 
     local inventory   = FarmAnimalInventory[farmId] or { cows = 0, pigs = 0 }
-    print('[rfz-debug][S3] inventory | cows=' .. tostring(inventory.cows) .. ' pigs=' .. tostring(inventory.pigs))
 
     local corralsData = {}
     for _, corral in ipairs(farm.corrals or {}) do
@@ -1067,7 +1060,6 @@ lib.callback.register('rodz-fazenda:server:getTabletFarmData', function(src, far
         }
     end
 
-    print('[rfz-debug][S4] retornando ok=true | corrals=#' .. tostring(#corralsData))
     return {
         ok       = true,
         cowCount = inventory.cows or 0,
@@ -1077,17 +1069,14 @@ lib.callback.register('rodz-fazenda:server:getTabletFarmData', function(src, far
 end)
 
 lib.callback.register('rodz-fazenda:server:getPlayerInventoryItems', function(src)
-    print('[rfz-debug][S5] getPlayerInventoryItems | src=' .. tostring(src))
     local ok1, milk     = pcall(function() return exports.ox_inventory:GetItem(src, Config.Items.milk,     nil, false) end)
     local ok2, medicine = pcall(function() return exports.ox_inventory:GetItem(src, Config.Items.medicine, nil, false) end)
-    if not ok1 then print('[rfz-debug][S5-WARN] ox_inventory:GetItem milk erro: ' .. tostring(milk)) milk = nil end
-    if not ok2 then print('[rfz-debug][S5-WARN] ox_inventory:GetItem medicine erro: ' .. tostring(medicine)) medicine = nil end
-    local result = {
+    if not ok1 then milk     = nil end
+    if not ok2 then medicine = nil end
+    return {
         milk     = milk     and milk.count     or 0,
         medicine = medicine and medicine.count or 0,
     }
-    print('[rfz-debug][S6] retornando milk=' .. result.milk .. ' medicine=' .. result.medicine)
-    return result
 end)
 
 AddEventHandler('onResourceStart', function(res)
