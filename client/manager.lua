@@ -3,6 +3,8 @@
 local PolyZone = require 'modules.polyzone'
 local Preview  = require 'modules.preview'
 
+local activePreview = { cursor = nil, list = nil }
+
 local function notify(description, notifyType, title)
     lib.notify({
         title = title or 'Fazenda',
@@ -98,10 +100,13 @@ local function placeSpawnPoints(corrType, onDone)
     local cursor = CreatePed(pedType, hash, playerCoords.x, playerCoords.y, playerCoords.z, playerHeading, false, false)
     if not DoesEntityExist(cursor) then
         lib.hideTextUI()
+        SetModelAsNoLongerNeeded(hash)
         notify('Falha ao criar o preview do animal.', 'error')
         return nil
     end
 
+    SetModelAsNoLongerNeeded(hash)
+    SetEntityAsMissionEntity(cursor, true, true)
     SetEntityAlpha(cursor, 180, false)
     SetEntityInvincible(cursor, true)
     SetEntityCollision(cursor, false, false)
@@ -109,6 +114,8 @@ local function placeSpawnPoints(corrType, onDone)
     SetBlockingOfNonTemporaryEvents(cursor, true)
 
     local previews = {}
+    activePreview.cursor = cursor
+    activePreview.list = previews
     local heading  = playerHeading
     local prefixZ  = 0.0
     local distance = 4.0
@@ -153,6 +160,7 @@ local function placeSpawnPoints(corrType, onDone)
             if IsDisabledControlJustPressed(0, 22) then
                 local c = GetEntityCoords(cursor)
                 local pv = CreatePed(pedType, hash, c.x, c.y, c.z, heading, false, false)
+                SetEntityAsMissionEntity(pv, true, true)
                 SetEntityAlpha(pv, 100, false)
                 SetEntityInvincible(pv, true)
                 SetEntityCollision(pv, false, false)
@@ -182,6 +190,8 @@ local function placeSpawnPoints(corrType, onDone)
                     for _, pv in ipairs(previews) do
                         if DoesEntityExist(pv) then DeleteEntity(pv) end
                     end
+                    activePreview.cursor = nil
+                    activePreview.list = nil
                     p:resolve(points)
                 end
             end
@@ -193,6 +203,8 @@ local function placeSpawnPoints(corrType, onDone)
                 for _, pv in ipairs(previews) do
                     if DoesEntityExist(pv) then DeleteEntity(pv) end
                 end
+                activePreview.cursor = nil
+                activePreview.list = nil
                 p:resolve(nil)
             end
         end
@@ -443,4 +455,19 @@ end
 RegisterNetEvent('rodz-fazenda:client:openFarmManager')
 AddEventHandler('rodz-fazenda:client:openFarmManager', function()
     openFarmList()
+end)
+
+AddEventHandler('onResourceStop', function(res)
+    if res ~= GetCurrentResourceName() then return end
+    lib.hideTextUI()
+    if activePreview.cursor and DoesEntityExist(activePreview.cursor) then
+        DeleteEntity(activePreview.cursor)
+    end
+    if activePreview.list then
+        for _, pv in ipairs(activePreview.list) do
+            if DoesEntityExist(pv) then DeleteEntity(pv) end
+        end
+    end
+    activePreview.cursor = nil
+    activePreview.list = nil
 end)

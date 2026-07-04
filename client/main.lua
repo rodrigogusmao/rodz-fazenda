@@ -570,6 +570,7 @@ local function spawnAnimal(animalId, animalType, coords, corral, farmId)
 
     local groundZ = resolveGroundZ(coords.x, coords.y, coords.z or 0.0)
     local ped = CreatePed(pedType, hash, coords.x, coords.y, groundZ, coords.w or 0.0, false, false)
+    SetModelAsNoLongerNeeded(hash)
     SetEntityAsMissionEntity(ped, true, true)
     SetBlockingOfNonTemporaryEvents(ped, true)
     SetEntityInvincible(ped, true)
@@ -745,6 +746,7 @@ local function spawnBuyerPed(farmId)
 
     local spawnZ = coords.z or 0.0
     local ped = CreatePed(4, hash, coords.x, coords.y, spawnZ, coords.w or 0.0, false, false)
+    SetModelAsNoLongerNeeded(hash)
     SetEntityAsMissionEntity(ped, true, true)
     SetEntityHeading(ped, coords.w or 0.0)
     SetEntityVisible(ped, true, false)

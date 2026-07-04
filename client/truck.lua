@@ -18,6 +18,14 @@ local function removeTruckBlip()
     end
 end
 
+local function requestEntityControl(ent)
+    local deadline = GetGameTimer() + 300
+    while DoesEntityExist(ent) and not NetworkHasControlOfEntity(ent) and GetGameTimer() < deadline do
+        NetworkRequestControlOfEntity(ent)
+        Wait(0)
+    end
+end
+
 local function notify(description, notifyType, title)
     lib.notify({
         title       = title or 'Fazenda',
@@ -79,12 +87,14 @@ local function cleanScene()
 
     if activeScene.driver and DoesEntityExist(activeScene.driver) then
         exports.ox_target:removeLocalEntity(activeScene.driver)
-        DeleteEntity(activeScene.driver)
+        requestEntityControl(activeScene.driver)
+        if DoesEntityExist(activeScene.driver) then DeleteEntity(activeScene.driver) end
     end
 
     if activeScene.vehicle and DoesEntityExist(activeScene.vehicle) then
         exports.ox_target:removeLocalEntity(activeScene.vehicle)
-        DeleteEntity(activeScene.vehicle)
+        requestEntityControl(activeScene.vehicle)
+        if DoesEntityExist(activeScene.vehicle) then DeleteEntity(activeScene.vehicle) end
     end
 
     activeScene = nil
@@ -337,6 +347,8 @@ AddEventHandler('rodz-fazenda:client:startTruck', function(res)
 
     local vehicle = CreateVehicle(truckHash, spawn.x, spawn.y, spawnZ, spawn.w or 0.0, true, true)
     if not vehicle or vehicle == 0 or not DoesEntityExist(vehicle) then
+        SetModelAsNoLongerNeeded(truckHash)
+        SetModelAsNoLongerNeeded(driverHash)
         notify('Falha ao spawnar o caminhao boiadeiro.', 'error')
         return
     end
@@ -344,10 +356,14 @@ AddEventHandler('rodz-fazenda:client:startTruck', function(res)
     local driver = CreatePedInsideVehicle(vehicle, 4, driverHash, -1, true, true)
     if not driver or driver == 0 or not DoesEntityExist(driver) then
         DeleteEntity(vehicle)
+        SetModelAsNoLongerNeeded(truckHash)
+        SetModelAsNoLongerNeeded(driverHash)
         notify('Falha ao spawnar o motorista do caminhao.', 'error')
         return
     end
 
+    SetModelAsNoLongerNeeded(truckHash)
+    SetModelAsNoLongerNeeded(driverHash)
     SetEntityAsMissionEntity(vehicle, true, true)
     SetEntityAsMissionEntity(driver, true, true)
     SetEntityCoordsNoOffset(vehicle, spawn.x, spawn.y, spawnZ, false, false, false)

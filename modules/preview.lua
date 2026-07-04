@@ -1,6 +1,7 @@
 local Preview = {}
 
 local busy = false
+local activePreview = nil
 
 -- ─── Raycast ──────────────────────────────────────────────────────────────────
 
@@ -87,6 +88,9 @@ function Preview.placePed(model, label)
     local lastPos = pc
 
     local ped = CreatePed(4, hash, pc.x, pc.y, pc.z, heading, false, false)
+    SetModelAsNoLongerNeeded(hash)
+    SetEntityAsMissionEntity(ped, true, true)
+    activePreview = ped
     SetEntityAlpha(ped, 180, false)
     SetEntityInvincible(ped, true)
     SetEntityCollision(ped, false, false)
@@ -136,6 +140,7 @@ function Preview.placePed(model, label)
 
         lib.hideTextUI()
         if DoesEntityExist(ped) then DeleteEntity(ped) end
+        activePreview = nil
         p:resolve(result)
     end)
 
@@ -160,6 +165,9 @@ function Preview.placeVehicle(model, label)
     local lastPos = pc
 
     local veh = CreateVehicle(hash, pc.x, pc.y, pc.z, heading, false, false)
+    SetModelAsNoLongerNeeded(hash)
+    SetEntityAsMissionEntity(veh, true, true)
+    activePreview = veh
     SetEntityAlpha(veh, 120, false)
     SetEntityInvincible(veh, true)
     SetEntityCollision(veh, false, false)
@@ -210,6 +218,7 @@ function Preview.placeVehicle(model, label)
 
         lib.hideTextUI()
         if DoesEntityExist(veh) then DeleteEntity(veh) end
+        activePreview = nil
         p:resolve(result)
     end)
 
@@ -220,6 +229,10 @@ AddEventHandler('onResourceStop', function(res)
     if res ~= GetCurrentResourceName() then return end
     busy = false
     lib.hideTextUI()
+    if activePreview and DoesEntityExist(activePreview) then
+        DeleteEntity(activePreview)
+    end
+    activePreview = nil
 end)
 
 return Preview
